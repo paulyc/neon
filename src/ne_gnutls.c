@@ -554,7 +554,7 @@ dup_error:
 static int provide_client_cert(gnutls_session_t session,
                                const gnutls_datum_t *req_ca_rdn, int nreqs,
                                const gnutls_pk_algorithm_t *sign_algos,
-                               int sign_algos_length, gnutls_retr_st *st)
+                               int sign_algos_length, gnutls_retr2_st *st)
 {
     ne_session *sess = gnutls_session_get_ptr(session);
     
@@ -619,7 +619,7 @@ static int provide_client_cert(gnutls_session_t session,
             ) {
             NE_DEBUG(NE_DBG_SSL, "Supplying client certificate.\n");
 
-            st->type = type;
+            st->cert_type = type;
             st->ncerts = 1;
             st->cert.x509 = &sess->client_cert->cert.subject;
             st->key.x509 = sess->client_cert->pkey;
@@ -650,8 +650,8 @@ ne_ssl_context *ne_ssl_context_create(int flags)
     ne_ssl_context *ctx = ne_calloc(sizeof *ctx);
     gnutls_certificate_allocate_credentials(&ctx->cred);
     if (flags == NE_SSL_CTX_CLIENT) {
-        gnutls_certificate_client_set_retrieve_function(ctx->cred,
-                                                        provide_client_cert);
+        gnutls_certificate_set_retrieve_function(ctx->cred,
+                                                        dup_client_cert);
     }
     gnutls_certificate_set_verify_flags(ctx->cred, 
                                         GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT);
